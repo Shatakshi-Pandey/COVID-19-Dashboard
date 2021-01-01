@@ -50,21 +50,37 @@ ui <- shinyUI(
           fluidRow(
             selectInput("country", "Select the country", choices = c(
               "Afghanistan", "Angola", "Albania", "Egypt", "Andorra",
-              "United Arab Emirates", "Argentina"
+              "United Arab Emirates", "Argentina", "Armenia", "American Samoa", "Antigua and Barbuda", "Australia", "Austria", "Azerbaijan",
+              "Burundi", "Belgium", "Benin", "Burkina Faso", "Bangladesh", "Bulgaria", "Bahrain", "Bahamas", "Bosnia and Herzegovina", "Belarus",
+              "Belize", "Bermuda", "Bolivia", "Brazil", "Barbados", "Brunei", "Bhutan", "Botswana", "Costa Atlantica", "Central African Republic", "Canada", "Switzerland",
+              "Chile", "China", "Cote d'Ivoire", "Cameroon", "Congo, the Democratic Republic of the", "Congo", "Colombia", "Comoros", "Cape Verde", "Costa Rica",
+              "Cuba", "Cyprus", "Czech Republic", "Germany", "Djibouti", "Dominica", "Denmark", "Dominican Republic", "Diamond Princess", "Algeria",
+              "Ecuador", "Egypt", "Eritrea", "Spain", "Estonia", "Ethiopia", "Finland", "Fiji", "France", "Gabon", "United Kingdom", "Georgia", "Ghana", "Guinea",
+              "Gambia", "Guinea-Bissau", "Equatorial Guinea", "Grand Princess", "Greece", "Grenada", "Guatemala", "Guam", "Guyana", "Honduras", "Croatia",
+              "Haiti", "Hungary", "Indonesia", "India", "Ireland", "Iran", "Iceland", "Israel", "Italy", "Jamaica", "Jordan", "Japan", "Kazakhstan", "Kenya", "Kyrgyzstan",
+              "Cambodia", "Saint Kitts and Nevis", "Korea, South", "Kuwait", "Laos", "Lebanon", "Liberia", "Libya", "Saint Lucia", "Liechtenstein", "Sri Lanka", "Lesotho",
+              "Lithuania", "Luxembourg", "Latvia", "Morocco", "Monaco", "Moldova", "Madagascar", "Maldives", "Mexico", "Marshall Islands", "North Macedonia", "Mali", "Malta",
+              "Myanmar", "Montenegro", "Mongolia", "Northern Mariana Islands", "Mozambique", "Mauritania", "MS Zaandam", "Mauritius", "Malawi", "Malaysia", "Namibia", "Niger",
+              "Nigeria", "Nicaragua", "Netherlands", "Norway", "Nepal", "New Zealand", "Oman", "Pakistan", "Panama", "Peru", "Philippines", "Papua New Guinea", "Poland",
+              "Puerto Rico", "Portugal", "Paraguay", "Palestine", "Qatar", "Kosovo", "Romania", "Russia", "Rwanda", "Saudi Arabia", "Sudan", "Senegal", "Singapore", "Solomon Islands",
+              "Sierra Leone", "El Salvador", "San Marino", "Somalia", "Serbia", "South Sudan", "Sao Tome and Principe", "Suriname", "Slovakia", "Slovenia",
+              "Sweden", "Swaziland", "Seychelles", "Syria", "Chad", "Togo", "Thailand", "Tajikistan", "Timor-Leste", "Trinidad and Tobago", "Tunisia", "Turkey",
+              "Taiwan", "Tanzania", "Uganda", "Ukraine", "Uruguay", "United States", "Uzbekistan", "Holy See", "Saint Vincent and the Grenadines", "Venezuela",
+              "Virgin Islands, U.S.", "Vietnam", "Vanuatu", "Samoa", "Yemen", "South Africa", "Zambia", "Zimbabwe"
             )),
           ),
           fluidPage(
             tabsetPanel(
               type = "tab",
-              tabPanel("Data", DTOutput("Data")),
-              tabPanel("Plot", plotOutput("lplot"))
+              tabPanel("Plot", plotlyOutput("lplot")),
+              tabPanel("Data", DTOutput("Data"))
             )
           )
         ),
         tabItem(
           tabName = "viz",
           fluidRow(
-            plotOutput("plot")
+            plotlyOutput("plot")
           )
         )
       )
@@ -82,19 +98,19 @@ server <- function(input, output) {
     )
   }
 
-  output$plot <- renderPlot({
-    barplot(`Manipulated Data`$confirmed,
-      names.arg = `Manipulated Data`$id, xlab = "Confirmed Cases", ylab = "Country Id", col = "blue",
-      main = "Bar Plot", border = "red"
-    )
+  output$plot <- renderPlotly({
+    ggplot(data = Data, aes(x = date, y = confirmed)) +
+      geom_line(colour = "grey", aes(date, deaths)) +
+      geom_line(colour = "#408FA6")
   })
-  output$lplot <- renderPlot({
+  output$lplot <- renderPlotly({
     fbar <- droplevels(Data[which(Data$administrative_area_level_1 == input$country), ])
-    plot(fbar$month, fbar$confirmed,
-      main = input$country,
-      ylab = "Confirmed",
-      xlab = "Month"
-    )
+    ggplot(data = fbar) +
+      geom_line(colour = "#FF2400", aes(date, deaths)) +
+      geom_line(colour = "#2f4f4f", aes(x = date, y = confirmed)) +
+      geom_line(colour = "#408FA6", aes(x = date, y = recovered)) +
+      labs(x = "Date", y = "Recovered\nConfirmed\nDeaths") +
+      theme_bw()
   })
 }
 
